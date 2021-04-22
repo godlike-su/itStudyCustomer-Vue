@@ -1,0 +1,76 @@
+.analysisTop{
+	list-style: none;
+	padding-top: 0.625rem;
+}
+.analysisTop label{
+	font-weight: bolder;
+	color: 	#5f5f5f;
+	padding: 10px;
+}
+.analysisTop label:hover{
+	color: 	#000000;
+}
+
+.analysisContainer{
+	.add{
+		position: fixed;
+		right: 1.85rem;
+		bottom: 13.875rem;
+		z-index: 9999;
+	}
+}
+
+.comment-wrap {
+  margin-bottom: 30px;
+  padding: 0.625rem;
+  .emoji-item-common {
+    background: url("~assets/img/emoji_sprite.png");
+    display: inline-block;
+    &:hover {
+      cursor: pointer;
+    }
+  }
+  .emoji-size-small {
+    /* // 表情大小 */
+    zoom: 0.3;
+  }
+  .emoji-size-large {
+		 /* // emojipanel表情大小 */
+    zoom: 0.5;
+    margin: 4px;
+  }
+  .comments-list {
+	  width: 100%;
+	  display: inline-block;
+    margin-top: 20px;
+    .comments-list-item {
+      margin-bottom: 20px;
+      .comments-list-item-heading {
+        display: inline-block;
+		padding-bottom: 0.625rem;
+         .van-image{
+          height: 32px;
+          width: 32px;
+          border-radius: 50%;
+          vertical-align: middle;
+        }
+        .comments-list-item-username {
+          margin-left: 5px;
+          font-weight: bold;
+        }
+      }
+	  /* 内容 */
+	  .comments-list-item-content {
+			word-break: break-all;
+	  }
+	  
+	 }
+	 
+	}
+	
+	.tabbar{
+		display: flex;
+		justify-content: space-between;
+		padding-bottom: 0.3125rem;
+	}
+}
