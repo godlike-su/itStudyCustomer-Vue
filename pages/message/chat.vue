@@ -8,7 +8,7 @@
 			  @click-left="onClickLeft"
 			/>
 		</van-sticky>
-		<van-pull-refresh v-model="isLoading" @refresh="onLoad" style="padding-bottom: 1.9rem;">
+		<van-pull-refresh v-model="isLoading" @refresh="onLoad" style="padding-bottom: 1.9rem;" id="chatContent" ref="message">
 			<!-- 下拉提示，通过 scale 实现一个缩放效果 -->
 			  <template #pulling="props">
 			    下拉可加载信息
@@ -17,9 +17,11 @@
 			  <template #loosing>
 				释放后加载信息
 			  </template>
-			  
-			<div class="message-personalletter"  style="overflow-y: scroll;" 
+			  <!-- style="overflow-y: scroll;" -->
+			<div id="message-personalletter"  
+			
 			v-for="(item,i) in chatList">
+				<!-- 自己的信息 -->
 				<div class="myrow" v-if="item.sendUserId.toString()==sendUserId">
 					<div class="time">
 						{{item.sendTime}}
@@ -28,7 +30,9 @@
 					<div class="thumb">
 						<van-image round alt="头像" :src="sendUser.thumb" class="headPort"
 						fit="cover" 
-						style="width: 3.25rem;height: 3.25rem;"/>
+						style="width: 3.25rem;height: 3.25rem;"
+						@click="$router.push({name: 'user-myHome-homeSort'})"
+						/>
 					</div>
 					<!-- 信息 -->
 					<div class="Information">
@@ -40,6 +44,7 @@
 					</div>
 				</div>
 				
+				<!-- 他人的信息 -->
 				<div class="otherrow" v-if="item.sendUserId.toString()!=sendUserId">
 					<div class="time">
 						{{item.sendTime}}
@@ -48,7 +53,8 @@
 					<div class="thumb">
 						<van-image round alt="头像" :src="receiveUser.thumb" class="headPort"
 						fit="cover" 
-						style="width: 3.25rem;height: 3.25rem;"/>
+						style="width: 3.25rem;height: 3.25rem;"
+						@click="$router.push({name: 'otherHome-homeSort', query: {id: item.sendUserId}})"/>
 					</div>
 					<!-- 信息 -->
 					<div class="Information">
@@ -67,7 +73,7 @@
 		
 		<div style="width:100%;border-radius: 2.125rem;min-height: 2.2375rem;
 		border: 1px solid #008A00;position: fixed;bottom: 0rem;padding: 0;margin: 0;background-color: #FFFFFF;"
-		@click="personallPopup=true">
+		 @click="popupClose()">
 			<div class="comment-wrap" style="padding: 0rem 0.5rem 0rem 0.5rem;margin: 0;">
 			  <div class="comments-list" 
 			  style="padding: 0.5975rem 0.3rem;word-break: break-all;margin: 0;width: 98%;text-align: left;">
@@ -79,8 +85,9 @@
 			  </div>
 			</div>
 		</div>
-		
-		<van-popup v-model="personallPopup" position="bottom" :style="{ height: '12%' }" >
+		<Nuxt />
+		<van-popup v-model="personallPopup" position="bottom" :style="{ height: '12%' }"
+		 :click-overlay="popupClose2()">
 			<Personalletter v-if="personallPopup"></Personalletter>
 		</van-popup>
 	</div>
@@ -93,7 +100,7 @@ import axios from 'axios'
 import moment from 'moment'
 import {itStudyMessageWebStock, photoUrl} from '@/type';
 export default {
-	// scrollToTop: false,
+	scrollToTop: false,
 	data() {
 		return{
 			personallPopup: false,
@@ -130,13 +137,22 @@ export default {
 			let req = {}
 			req.receiveUserId = this.receiveUserId
 			req.pageNumber = this.pageNumber
+			console.log(this.pageNumber)
+			if(this.pageNumber > this.pageCount) {
+				Toast('没有记录了')
+				this.isLoading = false
+				return
+			}
 			this.$axios({
 				url: '/customer/user/chatShowRecord.do',
 				method: 'post',
 				data: req
 			}).then(res => {
-				this.pageCount = res.data.data.count
-				if(this.pageNumber > this.pageCount/10) {
+				this.pageCount = res.data.data.pageCount
+				this.pageNumber = this.chatList.length / 10 + 1
+				// this.pageNumber = res.data.data.pageNumber
+				console.log(this.pageNumber + ":" + this.pageCount)
+				if(this.pageNumber > this.pageCount) {
 					Toast('没有记录了')
 					this.isLoading = false
 					return
@@ -156,15 +172,11 @@ export default {
 						}
 					}
 					this.isLoading = false
+					this.$nextTick(() => {
+						document.documentElement.scrollTop = 0
+					})
 				}, 500);
-				if (process.client) {
-					// this.$nextTick(() => {
-					// 	let msg = document.getElementsByClassName('message-personalletter')
-					// 	console.log(msg)
-					// 	msg.scrollTop = msg.scrollHeight // 滚动高度
-					// })
-					window.scrollTo(0,0)
-				}
+				
 			}).catch(e => {
 				
 			})
@@ -230,11 +242,15 @@ export default {
 		  this.$store.commit('setCommondContent', '');
 		  this.websock.send(JSON.stringify(data));
 		  this.errorTime = 0
+		  if(process.client) {
+			document.body.scroll = 15000
+			document.documentElement.scrollTop = 15000
+		  }
 		},
 		websocketclose(e){  //关闭
 		  console.log('断开连接',e);
 		},
-		//数据处理
+		//数据处理,人家发来的信息
 		dataProcess(data) {
 			data = JSON.parse(data);
 			if(data.sendMessage=='::connect::') {
@@ -258,6 +274,9 @@ export default {
 				chatValue.sendTime = data.sendTime;
 				this.appendKeywords(chatValue)
 			}
+			this.$nextTick(() => {
+				document.documentElement.scrollTop = 15000
+			})
 		},
 		appendKeywords(value) {
 			/**
@@ -324,7 +343,8 @@ export default {
 					chatValue.sendMessage = ''
 					chatValue.thumb = this.receiveUser.thumb
 					chatValue.name = this.receiveUser.name
-					chatValue.sendTime = moment().locale('zh-cn').format('YYYY-MM-DD HH:mm');
+					// chatValue.sendTime = moment().locale('zh-cn').format('YYYY-MM-DD HH:mm');
+					chatValue.sendTime = new Date();
 					chatValue.COUNT = ''
 					
 				  	chatList.unshift(chatValue)
@@ -335,6 +355,20 @@ export default {
 				Toast.fail(e)
 			})
 		},
+		//点击最下放的评论条
+		popupClose() {
+			this.$nextTick(() => {
+				document.documentElement.scrollTop = 15000
+			})
+			this.personallPopup=true
+		},
+		popupClose2() {
+			this.$nextTick(() => {
+				document.documentElement.scrollTop = 15000
+			})
+			
+		},
+	
 	},
 	beforeMount() {
 		//第一个参数就是mutations名字,隐藏底部
@@ -371,12 +405,15 @@ export default {
 			this.clearChatCOUNT()
 		}).catch(e => {
 			// Toast.fail(e)
-			console.log(e)
+			console.log(e.data.reason)
 		})
+		
 		//获取聊天记录
 		this.onLoad()
 		this.initWebSocket();
 		this.$store.commit(HIDE_TABBAR_MUTATION, false);
+	},
+	beforeMount() {
 		
 	},
 	destroyed() {
@@ -393,14 +430,13 @@ export default {
 	watch: {
 		isChat(newVal, oldVal) {
 			// this.$store.commit('setChat', 0)
+			
+			this.$nextTick(() => {
+				document.documentElement.scrollTop = 15000
+			})
 			if(newVal == 0) {
 				return
 			}
-			this.$nextTick(() => {
-				let msg = document.getElementsByClassName('message-personalletter')
-				msg.scrollTop = msg.scrollHeight // 滚动高度
-			})
-			// console.log('发送了信息')
 			this.websocketonopen()
 		},
 	}
@@ -412,11 +448,13 @@ export default {
 
 @import "@/assets/css/analysis/showContent";
 @import "@/assets/css/emoji.css";  // 导入精灵图样式
-.message-personalletter{
+#message-personalletter{
 	position: relative;
 	padding: 0.625rem 0.3125rem;
+	overflow-y: hidden;
+	overflow-y: auto;
  }
-.message-personalletter .myrow{
+#message-personalletter .myrow{
 	float: right;
 	width: 100%;
 	// 
@@ -436,7 +474,7 @@ export default {
 		margin: 0.3125rem 0rem 0.375rem;
 	}
 }
-.message-personalletter .otherrow{
+#message-personalletter .otherrow{
 	float: left;
 	width: 100%;
 	.time{

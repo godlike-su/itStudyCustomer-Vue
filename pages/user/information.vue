@@ -231,7 +231,7 @@ export default {
 				Toast("修改成功")
 			})
 			.catch(e => {
-				Toast.fail(e)
+				Toast.fail(e.data.reason)
 			})
 			this.showSex = false;
 			this.showBirthday = false;
@@ -266,7 +266,7 @@ export default {
 			this.interestCount = res.data.data.interestCount
 			//时间转换
 		}).catch(e => {
-			Toast.fail(e)
+			Toast.fail(e.data.reason)
 		})
 		
 	},

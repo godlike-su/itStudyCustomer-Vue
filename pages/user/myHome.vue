@@ -76,7 +76,8 @@ export default {
 			});
 		},
 		onClickLeft() {
-			this.$router.replace({path: '/user'})
+			// this.$router.replace({path: '/user'})
+			this.$router.go(-1)
 		},
 		onClick(name, title) {
 			//更新首页动态链接

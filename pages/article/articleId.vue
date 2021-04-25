@@ -13,7 +13,7 @@
 				<template #right >
 					<van-button plain  type="danger" size="small" v-if="navShow" style="margin-right: 1.625rem;" @click="follow">关注</van-button>
 					<!-- <van-icon name="closed-eye" @click="showPopup"/> -->
-					<van-image src="/icon/fontSize.png" @click="showPopup"></van-image>
+					<van-image :src="require('@/static/icon/fontSize.png')" @click="showPopup"></van-image>
 				 </template>
 			</van-nav-bar>
 		</van-sticky>
@@ -75,6 +75,8 @@
 		
 		<!-- 每个元素的两侧间隔相等 -->
 		<van-row type="flex" justify="space-around">
+		  <div v-if="article.numReply==0"><van-icon name="smile-comment-o" />评论</div>
+		  <div v-if="article.numReply!=0"><van-icon name="smile-comment" />{{article.numReply}}</div>
 		  <div @click="updateStart()" v-if="this.start==0 ? true : false"><van-icon name="star-o" />收藏</div>
 		  <div @click="updateStart()" v-if="this.start==1 ? true : false"><van-icon name="star" />已收藏</div>
 		</van-row>
@@ -89,9 +91,32 @@
 		</div>
 			
 			
-		<Nuxt />
+		<nuxt />
+		<div style="padding-bottom: 10.25rem;"></div>
 			
-			
+		<div style="width:100%;border-radius: 2.125rem;
+		border: 1px solid #008A00;position: fixed;bottom: 0rem;padding: 0;margin: 0;background-color: #ffffff;"
+		@click="clickNumReply(article.id, article.creator)">
+			<div class="comment-wrap" style="padding: 0rem 0.5rem 0rem 0.5rem;margin: 0;">
+			  <div class="comments-list" 
+			  style="padding: 0.5975rem 0.3rem;word-break: break-all;margin: 0;width: 98%;text-align: left;">
+					<div v-if="this.$store.state.CommondContent==''" style="color: #F56723;">
+						<span v-if=" userId == null || userId == ''">/未登录</span>
+						<span v-if=" userId != null && userId != ''">/写评论</span>
+					</div>
+					<div class="comments-list-item-content" 
+					v-html="commondContent(this.$store.state.CommondContent)" 
+					style="word-break: break-all;max-height: 3.9375rem;overflow-y: scroll;">
+						
+					</div>
+			  </div>
+			</div>
+		</div>
+		<!-- 评论弹出层 -->
+		<van-popup v-model="commondShow" position="bottom" :style="{ height: '10%' }" >	
+			<articleCommond v-if="commondShow"></articleCommond>
+		</van-popup>
+		
 		<!-- 底部弹出 -->
 		<van-popup
 		  v-model="show"
@@ -131,10 +156,12 @@
 
 <script>
 import {HIDE_TABBAR_MUTATION,SHOW_TABBAR_MUTATION} from '@/type';
+import articleUtil from '@/type/articleUtil'
 import axios from 'axios'
 import { Toast,Dialog  } from 'vant';
+import articleCommond from '@/components/articleCommond'
 export default {
-	
+	inject: ['reload'],
 	data() {
 		return {
 			show: false,
@@ -158,6 +185,8 @@ export default {
 			updateMark: false, //是否出现删除或者修改按钮
 			contentSize : "font-size: 1.125rem",
 			start : 0,  //是否收藏该文章
+			commondShow: false,
+			userId: null,
 		}
 	},
   methods: {
@@ -200,6 +229,30 @@ export default {
 			this.contentSize = "font-size: 40px"
 			localStorage.setItem("contentSize", "font-size: 40px")
 		}
+	},
+	//点击评论
+	clickNumReply(CommondContentId, creator) {
+		if(typeof localStorage.getItem('id') == 'undefined' || localStorage.getItem('id') == null) {
+			Toast.fail('请您登录后再评论')
+			// console.log(this.userId)
+			return
+		}
+		this.commondShow=true;
+		this.$store.commit("setCommondContentId", CommondContentId);
+		this.$store.commit("setCommondReplyId", creator);
+		
+	},
+	emoji(word) {
+	  // 生成html
+	  const type = word.substring(1, word.length - 1);
+	  return `<span class="emoji-item-common emoji-${type} emoji-size-small" ></span>`;
+	},
+	commondContent(word) {
+		word = word.replace(/:.*?:/g, this.emoji);
+		// console.log(word)
+		//空格 回车替换成前端显示的样式
+		word = word.replace(/\r\n/g,'<br/>').replace(/\n/g,'<br/>').replace(/\s/g,' ');
+		return word;
 	},
 	follow() {
 		//点击关注按钮
@@ -254,38 +307,7 @@ export default {
 		 * 2.添加到数组的首位，若超出10个则删除最后一个
 		 * 3.添加到缓存
 		 */
-		let appendFlag = true
-		if (this.searchHistoryList !== null && this.searchHistoryList !== undefined && this.searchHistoryList.length > 0) {
-		 //如果历史记录有了，则把该记录调到最前面
-		  for(let i=0; i<this.searchHistoryList.length; i++){
-			  let currentValue = this.searchHistoryList[i]
-			  if (currentValue == value) {
-			    appendFlag = false
-				if(i != 0) {
-					this.searchHistoryList.splice(i, 1);
-					this.searchHistoryList.unshift(value)
-					localStorage.setItem('historyList', JSON.stringify(this.searchHistoryList))	
-				}
-			    return
-			  }
-		  }
-		  
-		  // 判断-添加
-		  if (appendFlag === true) {
-			// 长度判断
-			if (this.searchHistoryList.length >= 10) {
-			  this.searchHistoryList.unshift(value)
-			  this.searchHistoryList.pop()
-			} else {
-			  this.searchHistoryList.unshift(value)
-			}
-			localStorage.setItem('historyList', JSON.stringify(this.searchHistoryList))
-		  }
-		} else {
-		  this.searchHistoryList = []
-		  this.searchHistoryList.push(value)
-		  localStorage.setItem('historyList', JSON.stringify(this.searchHistoryList))
-		}
+		articleUtil.articleAppendKeywords('articleHistoryList', value, 10)
 	  },
 	  //私信
 	  chat() {
@@ -414,6 +436,7 @@ export default {
 		  //作者信息
 		  this.authorUser = res.data.data.user;
 		  this.authorUser.thumb = "/customer/photo" + res.data.data.user.thumb;
+		  this.userId = localStorage.getItem('id')
 		  //是否关注
 		  if(typeof res.data.data.follower != 'undefined' && typeof res.data.data.follower.createTime != 'undefined') {
 			  this.follower = 1;
@@ -421,6 +444,7 @@ export default {
 			  this.follower = 0;
 		  }
 		  // console.log(res.data.data.start)
+		  
 		  //是否收藏
 		  if(typeof res.data.data.start != 'undefined' && typeof res.data.data.start.createTime != 'undefined') {
 			  this.start = 1;
@@ -432,22 +456,32 @@ export default {
 			  this.updateMark = true
 		  }
 		  //添加历史查看记录
-		  let list = JSON.parse(localStorage.getItem('historyList')) || []
+		  let list = JSON.parse(localStorage.getItem('articleHistoryList')) || []
 		  this.searchHistoryList = list
 		  this.appendKeywords(res.data.data.article.id)
-		  // let list = JSON.parse(localStorage.getItem('historyList')) || []
-		  // list.push(res.data.data.article.id)
-		  // localStorage.setItem('historyList', JSON.stringify(list))
 		  
 	})
 	// this.container = this.$refs.container;
   },
+  components: {
+	articleCommond  
+  },
+  
   beforeMount() {
   	//第一个参数就是mutations名字,隐藏底部
   },
   beforeDestroy() {
   	// bus.$emit("maizuo", true)
   	// this.$store.commit(SHOW_TABBAR_MUTATION, true);	
+	this.$store.commit('setCommondContent', '');
+  },
+  watch: {
+  	commondContent(newName, oldName) {
+  		// console.log(newName)
+  		this.commondemoji = ewName.replace(/:.*?:/g, this.emoji);
+  		newName = newName.replace(/:.*?:/g, this.emoji);
+  	},
+  	
   },
   
   async asyncData({ $axios,route }){
@@ -457,7 +491,7 @@ export default {
 };	
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 	
 .tabbar_popup{
 	display: flex;
@@ -511,4 +545,6 @@ export default {
 .t1{
 	display: flex;
 }
+@import "@/assets/css/analysis/showContent";
+@import "@/assets/css/emoji.css";  // 导入精灵图样式
 </style>

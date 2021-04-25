@@ -47,7 +47,12 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
-	 'nuxt-vuex-localstorage',
+	 // 'nuxt-vuex-localstorage',
+		['nuxt-vuex-localstorage',{
+			keyMixTimes: 64,
+			KeyLength: 64,
+			
+		}],
 	 
 	// '@nuxtjs/proxy'
   ],
@@ -64,7 +69,7 @@ export default {
   
   proxy: {
 	  '/static': {
-		  target: 'http://localhost:3000/',
+		  target: 'http://127.0.0.1:3000/itStudyClient',
 		  changeOrigin: true,
 			pathRewrite: {
 			  '^/static': '', //将 /api 替换掉
@@ -72,7 +77,7 @@ export default {
 	  },
 		'/customer': {
 		  // target: 'http://123.56.57.78:8081/',
-		  target: 'http://127.0.0.1:8081/',
+		  target: 'http://127.0.0.1:8081/itStudyClient',
 		  changeOrigin: true,
 			pathRewrite: {
 			  '^/customer': '', //将 /api 替换掉
@@ -93,7 +98,7 @@ export default {
   },
   // 这个选项允许您为应用程序中将被 Nuxt.js 转换为 HTML 文件的每个动态路由设置参数值。
 	generate: {
-		assetsPublicPath: './itStudy',
+		assetsPublicPath: './itStudyClient',
 		// dir: 'gh_pages', // gh_pages/ instead of dist/
 		// subFolders: false // HTML files are generated according to the route path
 	},
@@ -104,11 +109,11 @@ export default {
 	  
 	  
   router:{
-		// base:"/itStudy" ,//此为根目录，如果有具体目录需求按实际情况写,
-		base:"/" ,//此为根目录，如果有具体目录需求按实际情况写,
-		// scrollBehavior (to, from, savedPosition) {
-		// 	return { x: 0, y: 0 }
-		// }
+		base:"/itStudyClient" ,//此为根目录，如果有具体目录需求按实际情况写,
+		// base:"/" ,//此为根目录，如果有具体目录需求按实际情况写,
+		scrollBehavior (to, from, savedPosition) {
+			return { x: 0, y: 0 }
+		}
   }
  //  server: {
 	// port: 3000,

@@ -27,7 +27,7 @@
 			  <van-grid-item icon="like-o" text="我的收藏" :to="{name: 'user-myStart-startSort'}" />
 			  <van-grid-item icon="eye-o" :to="{name: 'user-history'}" text="浏览记录" />
 			  <van-grid-item icon="description" text="我的分享" :to="{name: 'user-myHome-homeSort'}" />
-			  <van-grid-item icon="/icon/signIn.png" text="签到" :to="{name: 'user-signIn'}" />
+			  <van-grid-item :icon="require('@/static/icon/signIn.png')" text="签到" :to="{name: 'user-signIn'}" />
 			</van-grid>
 		</div>
 		
@@ -36,9 +36,9 @@
 			<van-cell-group>
 			  <!-- <van-cell icon="label-o" title="我的收藏" is-link /> -->
 			  <van-cell icon="user-circle-o" title="我的信息" is-link to="/user/information" />
-			  <van-cell icon="/icon/feedback.png" title="反馈" is-link />
+			  <van-cell :icon="require('@/static/icon/feedback.png')" title="反馈" is-link />
 			  <van-cell icon="setting-o" to="/user/setting" title="安全设置" is-link />
-			  <van-cell icon="setting-o" to="/user/setting" title="设置" is-link />
+			  <!-- <van-cell icon="setting-o" to="/user/setting" title="设置" is-link /> -->
 			</van-cell-group>
 		</div>
 		

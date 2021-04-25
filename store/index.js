@@ -38,6 +38,8 @@ const store = () => new Vuex.Store({
 		chat: 0,
 		//未读信息数量
 		unchatCount: '',
+		//历史搜索
+		// searchHistory: [],
 		
 	},
 	getters:{
@@ -74,11 +76,25 @@ const store = () => new Vuex.Store({
 			localStorage.removeItem("token")
 			localStorage.removeItem("name")
 			localStorage.removeItem("id")
+			localStorage.removeItem("studentID")
 			localStorage.removeItem("sex")
 			localStorage.removeItem("thumb")
 			state.firstTime = null;
 			state.userId = null;
 			state.userName = null;
+		},
+		//清除所有localStore
+		clearLocalStorageAll(state) {
+			localStorage.removeItem("token")
+			localStorage.removeItem("name")
+			localStorage.removeItem("id")
+			localStorage.removeItem("studentID")
+			localStorage.removeItem("sex")
+			localStorage.removeItem("articleHistoryList")
+			localStorage.removeItem("contentSize")
+			// localStorage.removeItem("chat")
+			localStorage.removeItem("searchHistoryList")
+			
 		},
 		//设置未登录跳转的页面路径
 		setResultUrl(state, url){
@@ -113,6 +129,10 @@ const store = () => new Vuex.Store({
 		setunchatCount(state, data) {
 			state.unchatCount = data
 		},
+		//历史搜索设置
+		// setSearchHistory(state, data) {
+		// 	state.searchHistory = data
+		// },
 		
 	},
 	actions: {

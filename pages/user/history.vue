@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import {HIDE_TABBAR_MUTATION,SHOW_TABBAR_MUTATION} from '@/type';
+import {HIDE_TABBAR_MUTATION, SHOW_TABBAR_MUTATION, articleName} from '@/type';
 import {Toast, Dialog} from 'vant'
 import axios from 'axios'
 export default{
@@ -89,7 +89,7 @@ export default{
 			  message: '是否全部清除浏览足迹',
 			})
 			  .then(() => {
-			    localStorage.removeItem('historyList')
+			    localStorage.removeItem('articleHistoryList')
 			    this.searchHistoryList = []
 			    this.showFlag = false
 			    Toast.success('清除浏览记录成功!')
@@ -101,7 +101,7 @@ export default{
 		//文章跳转的页面
 		article(id) {
 			// console.log(id)
-			this.$router.push({path: '/article/articleId', query:{articleId:id, typeId: this.typeId, type: this.type, history: 1}})
+			this.$router.push({name: articleName, query:{articleId:id, typeId: this.typeId, type: this.type, history: 1}})
 		},
 		onClickLeft() {
 		  this.$router.push({path: '/user'})
@@ -111,9 +111,9 @@ export default{
 	
 	mounted() {
 		this.$store.commit(HIDE_TABBAR_MUTATION, false);	
-		if(typeof localStorage.getItem('historyList') != 'undefined')
+		if(typeof localStorage.getItem('articleHistoryList') != 'undefined')
 		{
-			let list = JSON.parse(localStorage.getItem('historyList')) || []
+			let list = JSON.parse(localStorage.getItem('articleHistoryList')) || []
 			this.searchHistoryList = list
 			this.showHistory()
 			//加载文章数据

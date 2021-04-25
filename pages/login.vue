@@ -46,6 +46,7 @@
 		    :src=verifyTokenUrl
 			@click="verifyFlush()"
 		  />
+		  
 		  <!-- 两端对齐 -->
 		  <van-row type="flex" justify="space-between">
 		    <van-checkbox v-model="isSave" shape="square">记住密码</van-checkbox>
@@ -64,7 +65,7 @@
 		  </div>
 		</van-form>
 		<div class="icon-wrapper">
-			推荐使用：<i class="iconfont"><a href="https://www.baidu.com/s?ie=UTF-8&wd=%E7%99%BE%E5%BA%A6" ><img src="/icon/qq.png"></a></i>
+			推荐使用：<i class="iconfont"><a href="" ><img :src="require('@/static/icon/qq.png')"></a></i>
 		</div>
 	</div>
 </template>
@@ -102,10 +103,12 @@ export default {
 			})
 			.then(res => {
 				localStorage.setItem("token", res.data.data.sessionId)
+				localStorage.setItem("studentID", res.data.data.studentID)
 				localStorage.setItem("name", res.data.data.name);
 				localStorage.setItem("id", res.data.data.id);
 				localStorage.setItem("sex", res.data.data.sex);
 				localStorage.setItem("thumb", "/customer/photo" + res.data.data.thumb);
+				
 				
 				if(this.$store.state.resultUrl.length == 0){
 					this.$router.push({name: 'index-typeId', params:{typeId: this.$store.state.typeId}, query:{typeId: this.$store.state.typeId, type: this.$store.state.type}})
@@ -115,6 +118,7 @@ export default {
 			})
 			.catch(e => {
 				this.verify = ''
+				this.verifyFlush()
 				Dialog.alert({
 				  message: e.data.reason,
 				})
@@ -126,11 +130,10 @@ export default {
 		},
 		//验证码刷新
 		verifyFlush() {
-			// this.verifyShow = false;
-			let verifyToken = Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + moment().locale('zh-cn').format('YYYYMMDDHHmmss')
+			this.verify = ""
+			let verifyToken = Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + new Date().getTime()
 			this.verifyToken = verifyToken
 			this.verifyTokenUrl = verifyImage + verifyToken
-			// this.verifyShow = true;
 		},
 		//忘记密码
 		forgetPs() {
@@ -149,19 +152,13 @@ export default {
 	},
 	
 	mounted() {
-		let verifyToken = Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + moment().locale('zh-cn').format('YYYYMMDDHHmmss')
+		let verifyToken = Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + new Date().getTime()
 		this.verifyToken = verifyToken
 		this.verifyTokenUrl = verifyImage + verifyToken
 	},
 	
 	watch: {
-		verifyShow(newValue, oldValue) {
-			if(newValue == false)
-			{
-				console.log('111')
-				this.verifyShow = true
-			}
-		}
+		
 	},
 }
 </script>

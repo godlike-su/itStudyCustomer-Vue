@@ -7,7 +7,8 @@
 		<!-- 内容区域 -->
 		<div class="comment-wrap" >
 			
-		  <textarea class="comment-input" placeholder="请输入内容" id="textpanel" v-model="content" @click="isShowEmojiPanel=false"
+		  <textarea class="comment-input" placeholder="请输入内容" 
+		  id="textpanel" v-model="content" @click="isShowEmojiPanel=false"
 		  ref="content"  :style='textareaStyle'>
 			  
 		  </textarea>
@@ -23,7 +24,7 @@
 					</div>
 					<label class="length">{{this.contentLength}}/300</label>
 					<!-- <button class="length" @click='showCommond' :style='textareaStyle'>取消</button> -->
-					<button class="length" @click="saveAnalysis">发送</button>
+					<button class="length" @click="saveArticle">发送</button>
 					<emoji-panel @emojiClick="appendEmoji" v-if="isShowEmojiPanel"></emoji-panel>
 				</div>
 			</div>
@@ -36,6 +37,7 @@ import axios from 'axios';
 import { Toast,Dialog  } from 'vant';
 import EmojiPanel from "@/pages/emoji/EmojiPanel.vue";
 export default{
+	inject: ['reload'],
 	data () {
 	  return {
 		content: this.$store.state.CommondContent,
@@ -43,7 +45,6 @@ export default{
 		isShowEmojiPanel: false,
 		
 		bottom: 'style="position: fixed; bottom: 0rem;"',
-		// textareaStyle: 'style="height: 30px;position: fixed;bottom: 2.05rem"',
 		textareaStyle: 'style="position: fixed; bottom: 2.05rem;"',
 		
 		//板块
@@ -56,15 +57,34 @@ export default{
 	},
 	
 	methods: {
-		//发布聊天信息
-		saveAnalysis() {
-			// console.log('发送')
+		//发布评论 
+		saveArticle() {
 			this.isShowEmojiPanel = false;
-			if(this.contentLength <=0 || this.contentLength > 300) {
+			if(this.contentLength <= 0 || this.contentLength > 300) {
 				Toast("请规范字数！")
 				return
 			}
-			this.$store.commit('setChat', this.contentLength);
+			
+			let req = {};
+			req.content = this.content
+			// req.analysisId = this.$route.query.analysisId;
+			//文章id
+			req.articleId = this.$store.state.CommondContentId;
+			//需要回复的作者id
+			req.commondId = this.$store.state.CommondReplyId
+			
+			// return
+			this.$axios({
+				url: '/customer/user/articleReply.do',
+				method: 'post',
+				data: req
+			}).then(res => {
+				// console.log(res.data);
+				this.content = ''
+				this.reload.reload()
+			}).catch(e => {
+				Toast.fail('保存失败：' + e.data.reason)
+			})
 		},
 		
 		
@@ -74,8 +94,6 @@ export default{
 		  if(this.isShowEmojiPanel==false) {
 			this.$refs.content.focus()
 		  }
-		  // document.body.scroll = 1500
-		  // document.documentElement.scrollTop = 1500
 		},
 		
 		appendEmoji(text) {
@@ -83,13 +101,33 @@ export default{
 		  this.content = el.value + ":" + text + ":";
 		  // this.$refs.content.focus() 
 		},
-		
-		//需要上传的信息
+		// 	this.$store.commit("setIsShowCommond",false);
+		// },
+		//需要上传的信息  暂时废弃
 		analysisInfomation() {
 			let req = {};
 			let user = {};
 			user.id = localStorage.getItem('id')
 			user.name = localStorage.getItem('name')
+			let analysis = {};
+			analysis.creator = localStorage.getItem('id')
+			analysis.title = this.content.substring(0, 20)
+			//空格 回车替换成前端显示的样式
+			analysis.content = this.content.replace(/\r\n/g,'<br/>').replace(/\n/g,'<br/>').replace(/\s/g,' ');
+			analysis.cat1 = this.cat1
+			
+			if(typeof this.imgList[0]!='undefined'){
+				analysis.img1 = this.imgList[0].name;
+				if(typeof this.imgList[1]!='undefined'){
+					analysis.img2 = this.imgList[1].name;
+					if(typeof this.imgList[2]!='undefined'){
+						analysis.img3 = this.imgList[2].name;
+					}
+				}
+			}
+			req.user = user;
+			req.analysis = analysis;
+			return req;
 		},
 		
 	},
@@ -97,12 +135,12 @@ export default{
 	watch: {
 		content(newName, old) {
 			this.contentLength = newName.length
-			// console.log(newName)
 			if(newName.length > 300) {
 				Toast("请规范字数！")
 			};
 			this.$store.commit('setCommondContent', newName)
 		},
+		//废弃
 		imgList(newName, old) {
 			if(this.imgList.length >= 3) {
 				this.uploadDisabled = true
@@ -117,17 +155,14 @@ export default{
 			  this.textareaStyle = 'style="position: fixed; bottom: 17.05rem;"';
 			}else {
 			  this.bottom = 'style="position: fixed; bottom: 0rem;"';
-			  this.textareaStyle = 'style="position: fixed; bottom: 2.05rem;"';
+			  this.textareaStyle = 'style="position: fixed; bottom: 1.05rem;"';
 			}
-			// document.body.scroll = 1500
-			document.documentElement.scrollTop = 1500
-		},
+		}
+		
 	},
 	
 	mounted() {
 		this.$refs.content.focus();
-		// document.body.scroll = 1500
-		document.documentElement.scrollTop = 1500
 	}
 	
 }
@@ -175,6 +210,8 @@ export default{
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		
+		
 		// height: 150px;
 	}
 

@@ -8,7 +8,7 @@
 		/>
 		<div class="top">
 			<h1>IT分享注册</h1>
-			<van-icon name="/icon/register.png" :size="100" color="#57cad4" />
+			<van-icon :name="require('@/static/icon/register.png')" :size="100" color="#57cad4" />
 		</div>
 		
 		<van-form @submit="onSubmit">
@@ -29,7 +29,7 @@
 		  />
 		  <van-field
 		    v-model="password2"
-		    type="password2"
+		    type="password"
 		    name="password2"
 		    label="密码2"
 		    placeholder="确认密码"
@@ -84,9 +84,6 @@ export default {
 	 },
 	methods: {
 	    onSubmit(values) {
-	      // console.log('submit', values);
-			// console.log("用户名：" + values.name);
-			// console.log("密码：" + values.password);
 			if(values.name.trim().length < 4) {
 				Toast.fail("密码对比失败，请输入正确密码！")
 				return
@@ -96,25 +93,26 @@ export default {
 				return
 			}
 			let req = {};
-			let user = {};
-			user.name = values.name;
-			user.password = values.password;
-			req.user = user;
 			req.name = values.name;
 			req.password = values.password;
-			// req.isSave = 0;
+			
+			req.verifyToken = this.verifyToken;
+			req.verify = this.verify
 			this.$axios({
 				url: "/customer/register.do",
 				method: 'post',
 				data: req
 			})
 			.then(res => {
-				console.log(res)
+				// console.log(res)
 				this.$router.push({name: 'login'})
 			})
 			.catch(e => {
-				console.log(e)
-				Toast.fail(e.data.reason)
+				// console.log(e)
+				Dialog.alert({
+				  message: e.data.reason,
+				})
+				this.verifyFlush()
 			})
 	    },
 		onClickLeft() {
@@ -123,7 +121,8 @@ export default {
 		//验证码刷新
 		verifyFlush() {
 			// this.verifyShow = false;
-			let verifyToken = Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + moment().locale('zh-cn').format('YYYYMMDDHHmmss')
+			this.verify = ""
+			let verifyToken = Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + new Date().getTime()
 			this.verifyToken = verifyToken
 			this.verifyTokenUrl = verifyImage + verifyToken
 			// this.verifyShow = true;
@@ -137,7 +136,12 @@ export default {
 		// bus.$emit("maizuo", true)
 	// this.$store.state.isTabbarShow = true;
 	// this.$store.commit(SHOW_TABBAR_MUTATION, true);	
-	}
+	},
+	mounted() {
+		let verifyToken = Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + '' + Math.ceil(Math.random()*100) + new Date().getTime()
+		this.verifyToken = verifyToken
+		this.verifyTokenUrl = verifyImage + verifyToken
+	},
 }
 </script>
 

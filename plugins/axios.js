@@ -56,8 +56,8 @@ export default function({$axios,redirect,router,store,app}){
 	//错误处理
 	$axios.onError(error=>{
 		
-		console.log('错误拦截: ');
-		// console.log(error)
+		// console.log('错误拦截: ');
+		console.log(error.message)
 		if( typeof error.message!='undefined' && error.message.includes("timeout"))
 		{
 			const data = {}
@@ -69,7 +69,9 @@ export default function({$axios,redirect,router,store,app}){
 			Toast.fail('网络开小差了!')
 		}
 		// 处理
-		else if( typeof error.message!='undefined' && (error.message.includes("504") ||  error.message.includes("Network")))
+		else if( typeof error.message!='undefined' && (error.message.includes("504") ||  
+		error.message.includes("Network") || 
+		error.message.includes("404")))
 		{
 			// console.log("属性错误")
 			const data = {}

@@ -4,7 +4,6 @@ export default ({ app,redirect,params,query,store,router,$axios }) => {
       
 	  let path = to.path.split("/")
 	  console.log(path);
-	  console.log('-----------')
 	  // if(path[1] == "user" || path[1] == "message" || path[2] == "writeArt"){
 	  if(path[1] == "")
 	  {
@@ -42,6 +41,13 @@ export default ({ app,redirect,params,query,store,router,$axios }) => {
 		  {
 			redirect("/user")
 		  }
+	  }
+	  
+	  //滚动到底部
+	  if(path[2] == "chat")
+	  {
+		document.body.scrollTop = 10000
+		document.documentElement.scrollTop = 15000
 	  }
 	  
     })

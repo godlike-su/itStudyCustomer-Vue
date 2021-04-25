@@ -26,4 +26,26 @@ import moment from 'moment'
 <!-- 使用参考，或者百度 -->
 this.birthday = moment(value).format('YYYY年MM月DD日');
 
+<!-- 使用的 localStore 保存的数据 -->
+<!-- 字体大小 -->
+contentSize: '',   
+<!-- 历史浏览文章，保存10条 -->
+articleHistoryList: [],
+<!-- 用户id -->
+id: '',
+<!-- 用户头像 -->
+thumb: '',
+<!-- 用户昵称 -->
+name: '',
+<!-- token验证 -->
+token: '',
+<!-- 用户性别 -->
+sex: '',
+<!-- 用户学号 -->
+studentID: '',
+<!-- 历史搜索记录，10条 -->
+searchHistory: [],
+<!-- 私信  chat+id -->
+chat+id: [],
+
 

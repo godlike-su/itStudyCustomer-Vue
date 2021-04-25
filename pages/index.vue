@@ -3,11 +3,9 @@
 		<!-- 头部标签栏+搜索栏 -->
 		<van-sticky>
 			<van-search
-				v-model="topvalue"
-				show-action
+				
 				placeholder="请输入搜索关键词"
-				@search="onSearch"
-				@cancel="onCancel"
+				@click="$router.push({name: 'search-searchPage'})"
 			  />
 			  
 			  <van-tabs  @change="onClick" v-model="active" >
@@ -64,15 +62,15 @@
 		<div class="overlay" v-if="show" @click="show = false" >
 			<div class="block">
 				<router-link class="row" :to="{name: 'analysis-writeAnalysis'}">
-					<van-image src="/icon/ques-r.png" />
+					<van-image :src="require('@/static/icon/ques-r.png')" />
 					<label>问题求解</label>
 				</router-link>
 				<router-link class="row" :to="{name: 'article-writeArt'}">
-					<van-image src="/icon/know-b.png" color="red" />
+					<van-image :src="require('@/static/icon/know-b.png')" color="red" />
 					<label>知识分享</label>
 				</router-link>
 				<router-link class="row"  :to="{name: 'user-signIn'}">
-					<van-image src="/icon/signin-g.png" color="red" />
+					<van-image :src="require('@/static/icon/signin-g.png')" color="red" />
 					<label>签到</label>
 				</router-link>
 			</div>
@@ -85,12 +83,11 @@
 import axios from 'axios'; 
 import { Toast } from 'vant';
 import { Dialog } from 'vant';
-import {HIDE_TABBAR_MUTATION,SHOW_TABBAR_MUTATION} from '@/type';
+import {HIDE_TABBAR_MUTATION,SHOW_TABBAR_MUTATION, articleName} from '@/type';
 
 export default{
 	data() {
 	    return {
-	      topvalue: '',
 		  count: 0,
 		  navTabList: [],
 		  isShow: true,
@@ -110,14 +107,6 @@ export default{
 	    };
 	  },
 	  methods: {
-		//搜索栏的确认
-	    onSearch(val) {
-	      // console.log(val)
-	    },
-		//搜索栏的取消
-	    onCancel() {
-	      this.topvalue=''
-	    },
 		//搜索栏下方的文章分类
 		onClick(name, title) {
 			//更新首页动态链接
@@ -176,15 +165,15 @@ export default{
 					// this.pageCount = res.data.data.pageCount;
 					// this.pageNumber += 1;
 					this.pageCountList[this.active] = res.data.data.pageCount;
-					this.pageNumberList[this.active] += 1
 					setTimeout(() => {
 						if (this.refreshing) {
 							this.list = [];
 							//变回第一页
 							// this.pageNumber = 1;
-							this.pageNumberList[this.active] = 1
+							// this.pageNumberList[this.active] = 1
 							this.refreshing = false;
 						}
+						this.pageNumberList[this.active] += 1
 						for (let i = 0; i < res.data.data.article.length; i++) {
 							this.list.push(res.data.data.article[i]);
 						}
@@ -197,9 +186,10 @@ export default{
 				})
 				.catch((e) => {
 					this.error = true;
-					console.log(e)
+					Toast.fail(e.data.reason)
 					// console.log("首页文章加载错误" + e.data.reason);
 					this.loading = false;
+					this.refreshing = false;
 				})
 			}
 			else {
@@ -213,15 +203,15 @@ export default{
 					// this.pageCount = res.data.data.pageCount;
 					// this.pageNumber += 1;
 					this.pageCountList[this.active] = res.data.data.pageCount;
-					this.pageNumberList[this.active] += 1
 					setTimeout(() => {
 						if (this.refreshing) {
 							this.list = [];
 							//变回第一页
 							// this.pageNumber = 1;
-							this.pageNumberList[this.active] = 1
+							
 							this.refreshing = false;
 						}
+						this.pageNumberList[this.active] += 1
 						for (let i = 0; i < res.data.data.article.length; i++) {
 							this.list.push(res.data.data.article[i]);
 						}
@@ -234,7 +224,8 @@ export default{
 				})
 				.catch((e) => {
 					this.error = true;
-					console.log(e)
+					this.refreshing = false;
+					Toast.fail(e.data.reason)
 					// console.log("首页文章加载错误" + e.data.reason);
 					this.loading = false;
 				})
@@ -247,13 +238,14 @@ export default{
 			// 重新加载数据
 			// 将 loading 设置为 true，表示处于加载状态
 			this.loading = true;
+			this.pageNumberList[this.active] = 1
 			this.onLoad();
 			// Toast('刷新成功');
 		},
 		//文章跳转的页面
 		article(id) {
 			// console.log(id)
-			this.$router.push({path: '/article/articleId', query:{articleId:id, typeId: this.typeId, type: this.type}})
+			this.$router.push({name: articleName, query:{articleId:id, typeId: this.typeId, type: this.type}})
 		},
 		
 	
@@ -271,7 +263,7 @@ export default{
 		}).then(res => {
 			this.navTabList = res.data.data
 		}).catch(e => {
-			Toast.fail(e)
+			Toast.fail(e.data.reason)
 		})
 		
 		for(let i=0; i<30; i++) {
@@ -310,20 +302,23 @@ export default{
 		border-bottom: 1px solid #000000;
 	}
 	.add{
+		// position: fixed;
+		// right: 1.85rem;
+		// bottom: 4.875rem;
+		// z-index: 9999;
+		
 		position: fixed;
-		// top: 1.875rem;
-		right: 1.85rem;
-		bottom: 4.875rem;
-		// background-color: black;
+		right: 0.4rem;
+		top: 0.58rem;
 		z-index: 9999;
 	}
 
   .block {
 	position: fixed;
-	// top: 1.875rem;
-	right: 1.85rem;
-	// bottom: 6.775rem;
-	bottom: 7.70rem;
+	// right: 1.85rem;
+	// bottom: 7.70rem;
+	right: 0.4rem;
+	top: 3.43rem;
 	width: 7.5rem;
 	height: 8.5rem;
 	background-color: #000000;

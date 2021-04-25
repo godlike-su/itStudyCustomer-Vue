@@ -1,5 +1,4 @@
 <template>
-	<!-- 我的主页显示分类 -->
 	<div style="">
 		<div class="homeContent">
 			<!-- 下拉刷新，显示内容主题 -->
@@ -101,7 +100,22 @@
 					  </div>
 					</div>
 					
-					<div v-if="active==2">
+					<div  v-if="active==2" v-for="(item,i) in userList">
+						<van-cell  size="large" >
+							<template #title>
+							    <van-image width="30" height="30" :src="item.thumb" round cover
+								 @click="$router.push({name: 'otherHome-homeSort', query: {id: item.id}})"/>
+								<span class="custom-title">{{item.name}}</span>
+							</template>
+							<template #right-icon>
+								<van-button type="default" size="small" round @click="chat(item.id)">私信</van-button>
+								<van-button plain  type="danger" size="small" round v-if="item.follow==1" @click="follow(item.id, item.follow, i)" >已关注</van-button>
+								<van-button plain  type="primary" size="small" round v-if="item.follow==0" @click="follow(item.id, item.follow, i)" >关注</van-button>
+							</template>
+						</van-cell>
+					</div>
+					
+					<div v-if="active==3">
 						<p style="font-weight: bold;color: red;">敬请期待该功能上线...</p>
 					</div>
 				</van-list>
@@ -120,23 +134,23 @@
 
 <script>
 import axios from 'axios'; 
-import { Toast,Dialog,ImagePreview   } from 'vant';
-import { itStudyAnalysisUrl,analysisPrefix,articleName } from '@/type';
-export default {
-	inject: ['myHome'],
+import { Toast, Dialog } from 'vant';
+import { analysisPrefix,articleName } from '@/type';
+export default{
+	inject: ['mySearch'],
 	data() {
 		return {
 			loading: false,		//false表示加载完成
 			finished: false,	//数据结束标志
 			refreshing: false,  //下拉刷新,false表示加载完成
 			error: false,
-			pageNumberList: [1,1,1,1],
-			pageCountList: [1,1,1,1],
+			pageNumberList: [1,1,1],
+			pageCountList: [1,1,1],
 			articleList: [],		//文章数据
-			startList: [],
-			active: this.myHome.nowActive,
+			active: this.mySearch.nowActive,
 			analysisPrefix: analysisPrefix,
 			analysisList: [],
+			userList: [],
 			showShare: false,
 			options: [
 				// { name: '微信', icon: 'wechat' },
@@ -145,6 +159,11 @@ export default {
 				{ name: '分享海报', icon: 'poster' },
 				{ name: '二维码', icon: 'qrcode' },
 			],
+		}
+	},
+	computed: {
+		nowActive() {
+			return this.mySearch.nowActive
 		}
 	},
 	
@@ -157,9 +176,10 @@ export default {
 			if(this.active === 0) {
 				let number0 = 0
 				req.pageNumber = this.pageNumberList[number0]
+				req.searchContent = this.$route.query.searchValue
 				//加载数据，按照分页加载
 				await this.$axios({
-					url:'/customer/user/myHomeArticle.do',
+					url:'/customer/searchArticle.do',
 					data: req,
 					method: 'post'
 				})
@@ -190,16 +210,19 @@ export default {
 					this.error = true;
 					// console.log("首页文章加载错误" + e.data.reason);
 					this.loading = false;
+					Toast.fail(e.data.reason)
 				})
 			}
 			
 			//问答
-			if(this.active === 1) {
+			else if(this.active === 1) {
 				let number1 = 1
+				
 				req.pageNumber = this.pageNumberList[number1]
+				req.searchContent = this.$route.query.searchValue
 				//加载数据，按照分页加载
 				await this.$axios({
-					url:'/customer/user/myAnalysisList.do',
+					url:'/customer/searchAnalysis.do',
 					data: req,
 					method: 'post'
 				})
@@ -209,7 +232,7 @@ export default {
 						if (this.refreshing) {
 							this.analysisList = [];
 							// this.allList[number1] = this.analysisList
-							//变回第一页
+							//变回第2页
 							this.pageNumberList[number1] = 1;
 							this.refreshing = false;
 						}
@@ -242,20 +265,63 @@ export default {
 					this.error = true;
 					// console.log("首页文章加载错误" + e.data.reason);
 					this.loading = false;
+					Toast.fail(e.data.reason)
 				})
 				
 			}
 			
 			
-			//更多
-			if(this.active === 2) {
-				setTimeout(() => {
-					this.refreshing = false;
+			//用户
+			else if(this.active === 2) {
+				let number2 = 2
+				req.pageNumber = this.pageNumberList[number2]
+				req.searchContent = this.$route.query.searchValue
+				//加载数据，按照分页加载
+				await this.$axios({
+					url:'/customer/searchUser.do',
+					data: req,
+					method: 'post'
+				})
+				.then(res => {
+					this.pageCountList[number2] = res.data.data.pageCount;
+					setTimeout(() => {
+						if (this.refreshing) {
+							this.userList = [];
+							//变回第一页
+							this.pageNumberList[number2] = 1;
+							this.refreshing = false;
+						}
+						this.pageNumberList[number2] += 1;
+						// let articleList = this.list
+						for (let i = 0; i < res.data.data.userList.length; i++) {
+							res.data.data.userList[i].thumb = "/customer/photo"+res.data.data.userList[i].thumb
+							if(typeof res.data.data.userList[i].eachOther != 'undefined') {
+								res.data.data.userList[i].follow = true
+							}else {
+								res.data.data.userList[i].follow = false
+							}
+							this.userList.push(res.data.data.userList[i]);
+						}
+						// this.userList.push(res.data.data.userList);
+						this.loading = false;
+						if (this.pageNumberList[number2] > this.pageCountList[number2]) {
+							this.finished = true;
+						}
+					}, 1000);
+				})
+				.catch((e) => {
+					this.error = true;
+					// console.log("首页文章加载错误" + e.data.reason);
 					this.loading = false;
-					this.finished = true;
-				},300);
-					
-				
+					Toast.fail(e.data.reason)
+				})
+			}
+			
+			//更多
+			else if(this.active === 3) {
+				this.refreshing = false;
+				this.loading = false;
+				this.finished = true;
 			}
 			
 			
@@ -269,13 +335,12 @@ export default {
 			this.loading = true;
 			this.onLoad();
 		},
-	
+			
 		//文章跳转的页面----------------------------------------------
 		article(id, cat1) {
 			console.log(cat1)
 			this.$router.push({name: articleName, query:{articleId:id, typeId: cat1, type: this.type}})
 		},
-		//-------------------------------------------------
 		
 		// 有关问答的method-----------------------------
 		//点击某个问题
@@ -344,20 +409,63 @@ export default {
 				});
 			}
 		},
+		
+		//私信
+		chat(o_id) {
+		  if( localStorage.getItem('id')==null  ||  typeof localStorage.getItem('id') == 'undefined'   ) {
+			
+			Toast.fail('未登录，请登录再私信哦！')
+			return
+		  } else if(localStorage.getItem('id') == o_id) {
+			  Toast.fail('不能和自己私信！')
+			  return
+		  }
+		  this.$router.push({name: 'message-chat', query:{'userId' : o_id}})
+		},
+		
+		follow(o_id, follow, i) {
+			if(typeof follow=='undefined') {
+				this.userList[i].follow = false
+			}
+			
+			//点击关注按钮
+			if( localStorage.getItem('id')==null  ||  typeof localStorage.getItem('id') == 'undefined'   ) {
+				
+				Toast.fail('未登录，请登录再关注哦！')
+				return
+			}
+			else if(localStorage.getItem('id') == this.article.ref1) {
+				Toast.fail('不能关注自己！')
+				return  
+			}
+			let req = {};
+			req.m_id = localStorage.getItem('id');
+			req.o_id = o_id;
+			req.follow = follow;
+			this.$axios({
+				url: '/customer/user/setInterest.do',
+				method: 'post',
+				data: req
+			}).then(res => {
+				if(res.data.error == -1) {
+					Toast.fail(res.data.reason)
+				}else if(res.data.error == 0) {
+					this.userList[i].follow = !this.userList[i].follow
+					Toast.success('操作成功')
+				}else{
+					Toast.fail(res.data.reason)
+				}
+				
+			}).catch(e => {
+				Toast.fail(e.data.reason)
+			})
+		},
 		//显示分享面板
 		isShowShare(id) {
 			this.showShare = true
 			this.clickId = id;
 		},
 		
-		//-------------------------------------------------------------------
-	
-	},
-	
-	computed: {
-		nowActive() {
-			return this.myHome.nowActive
-		}
 	},
 	
 	watch: {
@@ -372,7 +480,14 @@ export default {
 				}
 			}
 			else if(newValue === 1) {
-				if ((this.pageNumberList[newValue] - 1) > (this.pageCountList[newValue] / 10)) {
+				if ((this.pageNumberList[newValue] - 1) > (this.pageCountList[newValue])) {
+					this.finished = true;
+				} else {
+					this.finished = false
+				}
+			}
+			else if(newValue === 2) {
+				if ((this.pageNumberList[newValue] - 1) > (this.pageCountList[newValue])) {
 					this.finished = true;
 				} else {
 					this.finished = false
@@ -394,10 +509,11 @@ export default {
 				this.onLoad()
 			} 
 			
-		}
+		},
+		
+	
 	},
 }
-
 </script>
 
 <style lang="scss">

@@ -62,20 +62,20 @@
 				<div v-if="item.numStart==0" @click="clickAnalysis(item)"><van-icon name="star-o" />收藏</div>
 				<div v-if="item.numStart!=0" @click="clickAnalysis(item)"><van-icon name="star" />{{item.numStart}}</div>
      		  </van-row>
-			 
+			  
 			  <!-- 加个隔条 -->
 			  <div style="height: 1px;background-color: #8cffe3;"></div>
 		    </div>
 		  </div>
 		</div>
-		
 		<!-- 页码 -->
 		<van-pagination
 		  v-model="pageNumber"
-		  :total-items="totalitems"
 		  :show-page-size="3"
+		  :page-count="pageCount"
 		  force-ellipses
 		  @change="showAnalysisList"
+		  v-if="paginationShow"
 		/>
 		
 		
@@ -98,12 +98,13 @@ import {HIDE_TABBAR_MUTATION,SHOW_TABBAR_MUTATION} from '@/type';
 export default {
 	data() {
 		return {
-			pageNumber: 2,
-			pageCount: 0,
-			totalitems: 0,
+			pageNumber: 1,
+			pageCount: 1,
+			totalitems: 1,
 			analysisList: [],
 			cat1: 0,
 			showShare: false,
+			paginationShow: true,
 			  options: [
 				// { name: '微信', icon: 'wechat' },
 				// { name: '微博', icon: 'weibo' },
@@ -196,6 +197,7 @@ export default {
 		//显示数据
 		showAnalysisList() {
 			let req = {};
+			
 			this.$store.commit('setAnalysisPageNumber', this.pageNumber)
 			req.pageNumber = this.pageNumber;
 			req.cat1 = this.cat1
@@ -241,16 +243,16 @@ export default {
 	
 	mounted() {
 		// let req = {};
-		if(typeof this.$route.query.pageNumber!='undefined') {
-			this.pageNumber = Number(this.$route.query.pageNumber)
-		}
-		else if(typeof this.$store.state.analysisPageNumber!='undefined') {
-			this.pageNumber = this.$store.state.analysisPageNumber
-		}
-		this.showAnalysisList();
+		// if(typeof this.$route.query.pageNumber!='undefined') {
+		// 	this.pageNumber = Number(this.$route.query.pageNumber)
+		// }
+		// else if(typeof this.$store.state.analysisPageNumber!='undefined') {
+		// 	this.pageNumber = this.$store.state.analysisPageNumber
+		// }
+		// this.paginationShow = false;
 		
+		this.showAnalysisList();
 	},
-	
 	beforeMount() {
 		//第一个参数就是mutations名字,显示底部
 		this.$store.commit(SHOW_TABBAR_MUTATION, true);	

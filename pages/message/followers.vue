@@ -8,26 +8,40 @@
 			  title="我的关注"
 			  >
 			</van-nav-bar>
-			<van-search
+		<!-- 	<van-search
 				v-model="topvalue"
 				show-action
 				placeholder="搜索用户"
 				@search="onSearch"
 				@cancel="onCancel"
-			  />
+			  /> -->
 		</van-sticky>
-		<div v-for="(item,i) in followerList">
-			<van-cell  size="large" >
-				<template #title>
-				    <van-image width="30" height="30" :src="item.thumb" round cover />
-					<span class="custom-title">{{item.name}}</span>
-				</template>
-				<template #right-icon>
-					<van-button type="default" size="small" round @click="chat(item.o_id)">私信</van-button>
-					<van-button plain  type="danger" size="small" round @click="follow(item.o_id, item.name, i)" >取消</van-button>
-				</template>
-			</van-cell>
-		</div>
+		
+		<!-- 下拉刷新，显示用户 -->
+		<van-pull-refresh v-model="refreshing" @refresh="onRefresh"  success-text="刷新成功" >
+			<van-list
+			  v-model="loading"
+			  :finished="finished"
+			  finished-text="没有更多了"
+			  :error.sync="error"
+			  error-text="请求失败，点击重新加载"
+			  @load="onLoad"
+			  :immediate-check="true"
+			>
+				<van-cell  size="large" v-for="(item,i) in followerList" >
+					<template #title>
+					    <van-image width="30" height="30" :src="item.thumb" round cover
+						 @click="$router.push({name: 'otherHome-homeSort', query: {id: item.o_id}})"/>
+						<span class="custom-title">{{item.name}}</span>
+					</template>
+					<template #right-icon>
+						<van-button type="default" size="small" round @click="chat(item.o_id)">私信</van-button>
+						<van-button plain  type="danger" size="small" round @click="follow(item.o_id, item.name, i)" >取消</van-button>
+					</template>
+				</van-cell>
+			
+			</van-list>
+		</van-pull-refresh>
 		
 	</div>
 </template>
@@ -41,7 +55,12 @@ export default {
 		return {
 			topvalue: '',
 			followerList: [],
-			
+			pageNumber: 1,
+			pageCount: 1,
+			loading: false,		//false表示加载完成
+			finished: false,	//数据结束标志
+			refreshing: false,  //下拉刷新,false表示加载完成
+			error: false,
 		}
 	},
 	methods: {
@@ -78,7 +97,6 @@ export default {
 			.catch(() => {
 			    // on cancel
 			  });
-			
 		},
 		
 		//搜索栏的确认
@@ -92,24 +110,64 @@ export default {
 		
 		onClickLeft() {
 			this.$router.go(-1)
-		}
+		},
+		//加载用户数据
+		async onLoad() {
+			//更新数据
+			let req = {};
+			req.pageNumber = this.pageNumber
+			await this.$axios({
+				url:'/customer/user/showFollower.do',
+				data: req,
+				method: 'post'
+			})
+			.then(res => {
+				// this.pageCount = res.data.data.pageCount;
+				// this.pageNumber += 1;
+				this.pageCount = res.data.data.pageCount;
+				setTimeout(() => {
+					if (this.refreshing) {
+						this.followerList = [];
+						//变回第一页
+						// this.pageNumber = 1;
+						this.refreshing = false;
+					}
+					this.pageNumber += 1
+					for(let i=0; i<res.data.data.followerList.length; i++) {
+						res.data.data.followerList[i].thumb = photoUrl + res.data.data.followerList[i].thumb
+						res.data.data.followerList[i].eachOther = Number(res.data.data.followerList[i].eachOther)
+						this.followerList.push(res.data.data.followerList[i])
+					}
+					// this.followerList = res.data.data.followerList
+					this.loading = false;
+					if (this.pageNumber > this.pageCount) {
+						this.finished = true;
+					}
+				}, 300);
+			})
+			.catch((e) => {
+				this.error = true;
+				this.refreshing = false;
+				Toast.fail(e.data.reason)
+				this.loading = false;
+			})
+		},
+		
+		//上拉刷新页面
+		onRefresh() {
+			// 清空列表数据
+			this.finished = false;
+			// 重新加载数据
+			// 将 loading 设置为 true，表示处于加载状态
+			this.loading = true;
+			this.pageNumber = 1
+			this.onLoad();
+			// Toast('刷新成功');
+		},
 	},
 	
 	mounted() {
-		let req = {}
-		this.$axios({
-			url: '/customer/user/showFollower.do',
-			method: 'post',
-			data: req
-		}).then(res => {
-			for(let i=0; i<res.data.data.length; i++) {
-				res.data.data[i].thumb = photoUrl + res.data.data[i].thumb
-				res.data.data[i].eachOther = Number(res.data.data[i].eachOther)
-			}
-			this.followerList = res.data.data
-		}).catch(e => {
-			
-		})
+		
 	},
 }
 </script>

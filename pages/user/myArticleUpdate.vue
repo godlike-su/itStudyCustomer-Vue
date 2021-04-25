@@ -251,7 +251,7 @@ export default{
 			article.draft = 0;
 			req.article = article;
 			this.$axios({
-				url: '/customer/article/updateArticle.do',
+				url: '/customer/user/article/updateArticle.do',
 				method: 'post',
 				data: req
 			}).then(res => {

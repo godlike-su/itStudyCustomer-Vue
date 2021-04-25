@@ -112,7 +112,7 @@
 <script>
 import axios from 'axios'; 
 import { Toast,Dialog,ImagePreview   } from 'vant';
-import { itStudyAnalysisUrl } from '@/type';
+import { itStudyAnalysisUrl,articleName,analysisPrefix } from '@/type';
 export default {
 	inject: ['myStart'],
 	data() {
@@ -125,7 +125,7 @@ export default {
 			pageCountList: [0,0],
 			articleList: [],		//文章数据
 			active: this.myStart.nowActive,
-			analysisPrefix: '/customer/photo/analysis/',
+			analysisPrefix: analysisPrefix,
 			analysisList: [],
 			showShare: false,
 			options: [
@@ -160,7 +160,7 @@ export default {
 						if (this.refreshing) {
 							this.articleList = [];
 							//变回第一页
-							this.pageNumberList[number2] = 1;
+							this.pageNumberList[number2] = 2;
 							this.refreshing = false;
 						}
 						// let articleList = this.list
@@ -168,7 +168,7 @@ export default {
 							this.articleList.push(res.data.data.article[i]);
 						}
 						this.loading = false;
-						if (this.pageNumberList[number2] >= this.pageCountList[number2]) {
+						if (this.pageNumberList[number2] > this.pageCountList[number2]) {
 							this.finished = true;
 						}
 					}, 1000);
@@ -199,7 +199,7 @@ export default {
 							this.analysisList = [];
 							// this.allList[number1] = this.analysisList
 							//变回第一页
-							this.pageNumberList[number1] = 1;
+							this.pageNumberList[number1] = 2;
 							this.refreshing = false;
 						}
 						// let analysisList = this.list
@@ -221,7 +221,7 @@ export default {
 						
 						console.log(res.data.data.analysisList[0])
 						this.loading = false;
-						if ((this.pageNumberList[number1]) >= (this.pageCountList[number1])) {
+						if ((this.pageNumberList[number1]) > (this.pageCountList[number1])) {
 							this.finished = true;
 						}
 					}, 1000);
@@ -248,7 +248,7 @@ export default {
 		//文章跳转的页面----------------------------------------------
 		article(id, cat1) {
 			console.log(cat1)
-			this.$router.push({path: '/article/articleId', query:{articleId:id, typeId: cat1, type: this.type}})
+			this.$router.push({name: articleName, query:{articleId:id, typeId: cat1, type: this.type}})
 		},
 		//-------------------------------------------------
 		
@@ -347,7 +347,7 @@ export default {
 				}
 			}
 			else if(newValue === 1) {
-				if ((this.pageNumberList[newValue] - 1) > (this.pageCountList[newValue] / 10)) {
+				if ((this.pageNumberList[newValue] - 1) > (this.pageCountList[newValue])) {
 					this.finished = true;
 				} else {
 					this.finished = false

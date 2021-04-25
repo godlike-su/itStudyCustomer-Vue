@@ -79,6 +79,8 @@
 				</template>
 			</van-swipe-cell>
 		</div>
+		
+		<!-- <button @click="$router.push({path: '/test/test'})">aaaa</button> -->
 	</div>
 </template>
 
