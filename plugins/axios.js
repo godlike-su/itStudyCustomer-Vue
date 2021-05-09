@@ -3,7 +3,7 @@ export default function({$axios,redirect,router,store,app}){
 	//基本配置
 	
 	// $axios.defaults.timeout=10000;
-	$axios.defaults.timeout=5000;
+	$axios.defaults.timeout=20000;
 	
     // $axios.defaults.method = 'post';
 	//请求拦截

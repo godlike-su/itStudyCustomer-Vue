@@ -37,15 +37,24 @@
 		    placeholder="验证码"
 		    :rules="[{ required: true, message: '请填写验证码' }]"
 		  >
+			<template #button>
+			   <van-image
+			   	v-model="verifyShow"
+			     width="150"
+			     height="40"
+			     :src=verifyTokenUrl
+			   	@click="verifyFlush()"
+			   />
+			</template>
 		  </van-field>
 		  
-		  <van-image
+		  <!-- <van-image
 			v-model="verifyShow"
 		    width="200"
 		    height="100"
 		    :src=verifyTokenUrl
 			@click="verifyFlush()"
-		  />
+		  /> -->
 		  
 		  <!-- 两端对齐 -->
 		  <van-row type="flex" justify="space-between">
@@ -64,9 +73,9 @@
 		    </van-button>
 		  </div>
 		</van-form>
-		<div class="icon-wrapper">
+		<!-- <div class="icon-wrapper">
 			推荐使用：<i class="iconfont"><a href="" ><img :src="require('@/static/icon/qq.png')"></a></i>
-		</div>
+		</div> -->
 	</div>
 </template>
 
@@ -107,6 +116,7 @@ export default {
 				localStorage.setItem("name", res.data.data.name);
 				localStorage.setItem("id", res.data.data.id);
 				localStorage.setItem("sex", res.data.data.sex);
+				localStorage.setItem("role", res.data.data.role);
 				localStorage.setItem("thumb", "/customer/photo" + res.data.data.thumb);
 				
 				

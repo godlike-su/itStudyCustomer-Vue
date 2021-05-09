@@ -42,7 +42,7 @@
 		<!-- 上传图片 -->
 		<van-uploader id="photoUpload" ref="checkbox" v-show="false" 
 		:after-read="afterRead" 
-		:max-size="500 * 1024"
+		:max-size="2 * 1024 * 1024"
 		 @oversize="onOversize"
 		>
 		</van-uploader>
@@ -133,7 +133,7 @@
 
 <script>
 import axios from 'axios';
-import {HIDE_TABBAR_MUTATION,SHOW_TABBAR_MUTATION} from '@/type';
+import {HIDE_TABBAR_MUTATION,SHOW_TABBAR_MUTATION,articlePrefix} from '@/type';
 import { Toast,Dialog,DropdownMenu, DropdownItem  } from 'vant';
 export default{
 	data () {
@@ -166,6 +166,8 @@ export default{
 		linkName: '',
 		link: '',
 		isShowLink: false,
+		storePath: '',
+		img: [],
 		
 		
 	    editorOption: {
@@ -218,21 +220,23 @@ export default{
 		  req.name = file.file.name;
 		  req.size = file.file.size;
 		  req.type = file.file.type;
+		  req.storePath = this.storePath.trim()
 		  req.lastModified = file.file.lastModified;
 		  this.$axios({
 			  url: "/customer/user/article/fileUpload.do",
 			  method: 'post',
 			  data: req,
 		  }).then(res => {
-			 this.content += `<img src="/customer${res.data.data}" alt="内容图片" />`
-			 // this.content += `<van-image src="/customer${res.data.data}" alt="内容图片" />`
+			 this.storePath = res.data.data.storePath
+			  this.img.push(res.data.data.imgName)
+			 this.content += `<img src="${articlePrefix}${res.data.data.storePath}${res.data.data.imgName}" alt="内容图片" />`
 		  }).catch(e => {
 			  Toast.fail(res.data.reason);
 			  Toast.fail('上传失败');
 		  })
 		},
 		onOversize(file) {
-		  Toast('文件大小不能超过 500kb');
+		  Toast('文件大小不能超过 2m');
 		},
 		//最后的确定发布。
 		onSubmit(values) {
@@ -249,6 +253,10 @@ export default{
 			article.title = this.title
 			article.cat1 = this.cat1;
 			article.draft = 0;
+			article.storePath = this.storePath.trim()
+			article.img1 = this.img[0]
+			article.img2 = this.img[1]
+			article.img3 = this.img[2]
 			req.article = article;
 			this.$axios({
 				url: '/customer/user/article/updateArticle.do',
@@ -313,8 +321,6 @@ export default{
 			this.link = "";
 			this.linkName = '';
 			// this.content += `<img src="/customer${res.data.data}" alt="内容图片" />`
-			
-			
 		},
 		
 		
@@ -352,6 +358,10 @@ export default{
 		  		article.title = this.title
 		  		article.cat1 = this.cat1;
 				article.draft = 1;
+				article.storePath = this.storePath.trim()
+				article.img1 = this.img[0]
+				article.img2 = this.img[1]
+				article.img3 = this.img[2]
 		  		req.article = article;
 				console.log(req)
 		  		this.$axios({
@@ -405,7 +415,18 @@ export default{
 		}).then(res => {
 			let option3 = [];
 			for(let i=1; i<res.data.data.length; i++){
-				option3[i-1] = {text: res.data.data[i].name, value: res.data.data[i].id}
+				if(localStorage.getItem('role')=='root' || localStorage.getItem('role')=='admin') {
+					if(i == 1) {
+						continue
+					}
+					option3[i] = {text: res.data.data[i].name, value: res.data.data[i].id}
+					continue
+				}else {
+					if(i == 0 || i == 1) {
+						continue
+					}
+					option3[i-2] = {text: res.data.data[i].name, value: res.data.data[i].id}
+				}
 			}
 			this.navTabList = res.data.data
 			this.option3 = option3
@@ -430,6 +451,18 @@ export default{
 			this.type = r.type
 			this.form = r.form
 			this.address = r.address
+			if(r.img1!=null && r.length>8) {
+				this.img.push(r.img1)
+				this.storePath = r.storePath
+			}
+			if(r.img2!=null && r.img2.length>8) {
+				this.img.push(r.img2)
+				this.storePath = r.storePath
+			}
+			if(r.img3!=null && r.img3.length>8) {
+				this.img.push(r.img3)
+				this.storePath = r.storePath
+			}
 		}).catch(e => {
 			console.log(e)
 			Toast.fail('错误，没有该文章')

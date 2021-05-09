@@ -51,7 +51,7 @@ export default {
 		return {
 			// sex: 1 ? '男' : '女',
 			// firstTime: this.$store.state.firstTime,
-			// thumb: '',
+			thumb: '',
 			// 照片路径前缀
 			prefix: '/customer/photo',
 			user: '',
@@ -98,6 +98,7 @@ export default {
 		}).then(res => {
 			this.user = res.data.data.user
 			this.user.thumb = this.prefix + this.user.thumb
+			this.thumb = this.user.thumb
 			this.interestCount = res.data.data.interestCount
 		}).catch(e => {
 			Dialog.alert({

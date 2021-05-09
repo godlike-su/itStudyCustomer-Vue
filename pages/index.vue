@@ -29,12 +29,49 @@
 				  @load="onLoad"
 				  :immediate-check="true"
 				>
-					
-					<van-cell v-for="item in list" :key="item.id"  class="content">
+				
+					<van-cell v-for="item in list" :key="item.id"  class="content" v-if="typeId==4">
 						<!-- <router-link to="/article"> -->
 						<div class="row" v-on:click="article(item.id)">
 							<!-- 最多显示三行 -->
 							<label style="font-weight: bold;">
+								<span style="color: red;" v-if="item.topFlag=='1' ? true : false">[置顶]</span>
+			<!-- 					<span style="color: green;" v-if="item.type=='原创' ? true : false">[{{item.type}}]</span>
+								<span style="color: red;" v-if="item.type=='转载' ? true : false">[{{item.type}}]</span> -->
+								{{item.title}}
+							</label>
+							
+							<div class="van-multi-ellipsis--l2">
+							  {{item.text}}
+							</div>
+							<van-swipe :autoplay="3000">
+							  <van-swipe-item v-for="(image, index) in item.imgList" :key="index">
+								<van-grid :border="false" :column-num="1">
+									<van-grid-item>
+										  <van-image
+											height="12rem"
+											fit="scale-down"
+											:src="image"
+										  />
+									</van-grid-item>
+								</van-grid>
+								  
+							  </van-swipe-item>
+							</van-swipe>
+							<span>{{item.name}}</span> &nbsp;&nbsp; 
+							<span>{{item.numLike}}点赞量</span>&nbsp;&nbsp;
+							<span>{{item.numReply}}评论</span>&nbsp;&nbsp;
+							<span>{{item.numStart}}收藏</span> <br>
+							<span>{{item.createTime}}</span>
+						</div>
+					</van-cell>
+					
+					<van-cell v-for="item in list" :key="item.id"  class="content" v-if="typeId!=4">
+						<!-- <router-link to="/article"> -->
+						<div class="row" v-on:click="article(item.id)">
+							<!-- 最多显示三行 -->
+							<label style="font-weight: bold;">
+								<span style="color: red;" v-if="item.topFlag=='1' ? true : false">[置顶]</span>
 								<span style="color: green;" v-if="item.type=='原创' ? true : false">[{{item.type}}]</span>
 								<span style="color: red;" v-if="item.type=='转载' ? true : false">[{{item.type}}]</span>
 								{{item.title}}
@@ -82,8 +119,8 @@
 <script>
 import axios from 'axios'; 
 import { Toast } from 'vant';
-import { Dialog } from 'vant';
-import {HIDE_TABBAR_MUTATION,SHOW_TABBAR_MUTATION, articleName} from '@/type';
+import { Dialog, Lazyload } from 'vant';
+import {HIDE_TABBAR_MUTATION,SHOW_TABBAR_MUTATION, articleName, articlePrefix} from '@/type';
 
 export default{
 	data() {
@@ -104,6 +141,7 @@ export default{
 		 allList: [],
 		 pageNumberList: [],
 		 pageCountList: [],
+		 articlePrefix: articlePrefix,
 	    };
 	  },
 	  methods: {
@@ -147,7 +185,8 @@ export default{
 			let req = {};
 			req.typeId = this.typeId
 			if(typeof req.typeId=='undefined' ) {
-				req.typeId = 5
+				req.typeId = 4
+				this.typeId = 4
 			}
 			if(this.pageNumberList[this.active] === 0) {
 				this.pageNumberList[this.active] = 1
@@ -174,7 +213,19 @@ export default{
 							this.refreshing = false;
 						}
 						this.pageNumberList[this.active] += 1
+						let imgList = []
 						for (let i = 0; i < res.data.data.article.length; i++) {
+							if(res.data.data.article[i].img1!=null && res.data.data.article[i].img1.length>8) {
+								imgList.push(articlePrefix+res.data.data.article[i].storePath+res.data.data.article[i].img1)
+							}
+							if(res.data.data.article[i].img2!=null && res.data.data.article[i].img2.length>8) {
+								imgList.push(articlePrefix+res.data.data.article[i].storePath+res.data.data.article[i].img2)
+							}
+							if(res.data.data.article[i].img3!=null && res.data.data.article[i].img3.length>8) {
+								imgList.push(articlePrefix+res.data.data.article[i].storePath+res.data.data.article[i].img3)
+							}
+							res.data.data.article[i].imgList = imgList
+							imgList = []
 							this.list.push(res.data.data.article[i]);
 						}
 						this.allList[this.active] = this.list
@@ -212,7 +263,19 @@ export default{
 							this.refreshing = false;
 						}
 						this.pageNumberList[this.active] += 1
+						let imgList = []
 						for (let i = 0; i < res.data.data.article.length; i++) {
+							if(res.data.data.article[i].img1!=null && res.data.data.article[i].img1.length>8) {
+								imgList.push(articlePrefix+res.data.data.article[i].storePath+res.data.data.article[i].img1)
+							}
+							if(res.data.data.article[i].img2!=null && res.data.data.article[i].img2.length>8) {
+								imgList.push(articlePrefix+res.data.data.article[i].storePath+res.data.data.article[i].img2)
+							}
+							if(res.data.data.article[i].img3!=null && res.data.data.article[i].img3.length>8) {
+								imgList.push(articlePrefix+res.data.data.article[i].storePath+res.data.data.article[i].img3)
+							}
+							res.data.data.article[i].imgList = imgList
+							imgList = []
 							this.list.push(res.data.data.article[i]);
 						}
 						this.allList[this.active] = this.list
@@ -257,18 +320,40 @@ export default{
 	  },
 	
 	mounted() {
-		this.$axios({
-			url:"/customer/navTab.do",
-			method: 'post',
-		}).then(res => {
-			this.navTabList = res.data.data
-		}).catch(e => {
-			Toast.fail(e.data.reason)
-		})
+		if(this.$store.state.homeList.length < 5) {
+			this.$axios({
+				url:"/customer/navTab.do",
+				method: 'post',
+			}).then(res => {
+				this.navTabList = res.data.data
+				this.$store.commit("setHomeList", res.data.data)
+			}).catch(e => {
+				Toast.fail(e.data.reason)
+			})
+		} else {
+			this.navTabList = this.$store.state.homeList
+		}
+		
 		
 		for(let i=0; i<30; i++) {
 			this.pageNumberList[i] = 0
 		}
+		
+		let req = {}
+		if(localStorage.getItem('role')=='user') {
+			req.role = 'user'
+		}else if(localStorage.getItem('role')=='root') {
+			req.role = 'root'
+		}else if(localStorage.getItem('role')=='admin') {
+			req.role = 'admin'
+		}else {
+			req.role = 'visitor'
+		}
+		this.$axios({
+			url: '/customer/addAcess.do',
+			method: 'POST',
+			data: req
+		}).then(res => {}).catch(e => {})
 		
 	},
 	watch: {
@@ -288,7 +373,12 @@ export default{
 			
 		 }
 	},
-	beforeUpdate() {
+	beforeCreate() {
+			  //创建时检测是否直接是空路径，是的话进行刷新
+		if(typeof this.$route.query.typeId == 'undefined'){
+			this.$router.push({path: '/home', query:{typeId: 5, type: "热榜"}})
+			return
+		}
 	},
 	beforeMount() {
 		//第一个参数就是mutations名字,显示底部

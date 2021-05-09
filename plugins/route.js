@@ -7,7 +7,7 @@ export default ({ app,redirect,params,query,store,router,$axios }) => {
 	  // if(path[1] == "user" || path[1] == "message" || path[2] == "writeArt"){
 	  if(path[1] == "")
 	  {
-		redirect('/home?typeId=5')
+		redirect('/home?typeId=4&type=通知')
 	  }
 	  //未登录需要跳转的页面
 	  if( path[1] == "message" || path[2] == "writeArt" || path[2] == "writeAnalysis" || 

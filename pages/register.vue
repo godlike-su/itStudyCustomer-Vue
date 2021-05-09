@@ -31,25 +31,34 @@
 		    v-model="password2"
 		    type="password"
 		    name="password2"
-		    label="密码2"
+		    label="确认密码"
 		    placeholder="确认密码"
 		    :rules="[{ required: true, message: '请再次填写密码' }]"
 		  />
 		  <van-field
 		    v-model="verify"
-		    type="password"
+		    type="text"
 		    name="验证码"
 		    label="验证码"
 		    placeholder="验证码"
 		    :rules="[{ required: true, message: '请填写验证码' }]"
 		  >
+			<template #button>
+			   <van-image
+			   	v-model="verifyShow"
+			     width="150"
+			     height="40"
+			     :src=verifyTokenUrl
+			   	@click="verifyFlush()"
+			   />
+			</template>
 		  </van-field>
-		  <van-image
+		 <!-- <van-image
 		    width="200"
 		    height="100"
 		    :src=verifyTokenUrl
 			@click="verifyFlush()"
-		  />
+		  /> -->
 		  
 		  <div style="margin: 16px;">
 		    <van-button round block type="info" native-type="submit">
@@ -80,6 +89,7 @@ export default {
 		  verify: '',
 		  verifyToken: '',
 		  verifyTokenUrl: '',
+		  verifyShow: true,
 	    };
 	 },
 	methods: {

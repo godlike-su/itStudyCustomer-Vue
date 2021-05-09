@@ -16,7 +16,7 @@
 			<!-- 头像上传控件 -->
 			<van-uploader id="photoUpload" v-show="false"
 			:after-read="afterRead" 
-			:max-size="500 * 1024"
+			:max-size="3000 * 1024"
 			 @oversize="onOversize"
 			>
 			</van-uploader>
@@ -134,7 +134,7 @@ export default {
 		//头像文件太大提示
 		onOversize(file) {
 		  // console.log(file);
-		  Toast('文件大小不能超过 500kb');
+		  Toast('文件大小不能超过 2m');
 		},
 		//点击头像上传按钮
 		tumpUpload() {

@@ -36,7 +36,7 @@
 			<van-cell-group>
 			  <!-- <van-cell icon="label-o" title="我的收藏" is-link /> -->
 			  <van-cell icon="user-circle-o" title="我的信息" is-link to="/user/information" />
-			  <van-cell :icon="require('@/static/icon/feedback.png')" title="反馈" is-link />
+			  <van-cell :icon="require('@/static/icon/feedback.png')" title="反馈" is-link  to="/user/feedback" />
 			  <van-cell icon="setting-o" to="/user/setting" title="安全设置" is-link />
 			  <!-- <van-cell icon="setting-o" to="/user/setting" title="设置" is-link /> -->
 			</van-cell-group>

@@ -22,17 +22,9 @@ export default{
 			  },
 		  },
 	},
-	  beforeUpdate() {
-		  //创建时检测是否直接是空路径，是的话进行刷新
-	  	if(typeof this.$route.query.typeId == 'undefined'){
-		  this.$router.push({path: '/home', query:{typeId: 5, type: "热榜"}})
-	  	}
-	  },
+	 
 	  mounted() {
 	  },
-	  beforeCreate() {
-	  	
-	  }
 	
 }
 </script>

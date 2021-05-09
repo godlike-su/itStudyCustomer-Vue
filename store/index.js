@@ -11,9 +11,11 @@ const store = () => new Vuex.Store({
 		isTabbarShow: true,
 		list: [],
 		//首页链接动态
-		homeLink: '5',
-		typeId: '5',
-		type: '热榜',
+		homeLink: '4',
+		typeId: '4',
+		type: '通知',
+		//首页标题
+		homeList: [],
 		//用户登录信息
 		//-----------------------------
 		// id:sessionStorage.getItem('id'),
@@ -78,6 +80,7 @@ const store = () => new Vuex.Store({
 			localStorage.removeItem("id")
 			localStorage.removeItem("studentID")
 			localStorage.removeItem("sex")
+			localStorage.removeItem("role")
 			localStorage.removeItem("thumb")
 			state.firstTime = null;
 			state.userId = null;
@@ -90,6 +93,7 @@ const store = () => new Vuex.Store({
 			localStorage.removeItem("id")
 			localStorage.removeItem("studentID")
 			localStorage.removeItem("sex")
+			localStorage.removeItem("role")
 			localStorage.removeItem("articleHistoryList")
 			localStorage.removeItem("contentSize")
 			// localStorage.removeItem("chat")
@@ -128,6 +132,9 @@ const store = () => new Vuex.Store({
 		},
 		setunchatCount(state, data) {
 			state.unchatCount = data
+		},
+		setHomeList(state, data) {
+			state.homeList = data
 		},
 		//历史搜索设置
 		// setSearchHistory(state, data) {
